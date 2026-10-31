@@ -72,6 +72,35 @@
     .nav-item { flex: 1; text-align: center; padding: 8px; color: #6B7280; cursor: pointer; }
     .nav-item.active { color: #7C3AED; }
     .nav-item:hover { color: #F5F7FA; }
+    .voice-btn {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7C3AED 0%, #168BFF 60%, #00BFFF 100%);
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .voice-btn.listening {
+      animation: pulse 1.5s infinite;
+      background: linear-gradient(135deg, #EF4444 0%, #EF4444 100%);
+    }
+    .voice-btn.speaking {
+      background: linear-gradient(135deg, #22C55E 0%, #22C55E 100%);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
     .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
     .tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 14px; cursor: pointer; color: #8792A5; background: #0D1627; border: 1px solid rgba(201,205,213,0.10); }
     .tab.active { color: #F5F7FA; background: #7C3AED; border-color: #7C3AED; }
@@ -524,5 +553,8 @@
       navigator.serviceWorker.register('sw.js');
     }
   </script>
+<button id="voice-btn" class="voice-btn" onclick="Voice.isListening ? Voice.stopListening() : Voice.startListening()">🎤 Tap to Talk</button>
+<div id="voice-status" style="position: fixed; bottom: 150px; right: 20px; background: #09111F; color: #8792A5; padding: 8px 12px; border-radius: 8px; font-size: 12px; max-width: 200px; display: none;"></div>
+<script src="voice.js"></script>
 </body>
 </html>

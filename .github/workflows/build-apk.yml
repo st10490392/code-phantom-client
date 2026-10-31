@@ -14,10 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Capacitor CLI v8 requires Node >= 22
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       # `npm ci` installs from package-lock.json only. node_modules is no longer
       # committed (Windows-generated .cmd shims broke `npx cap` on Linux runners).

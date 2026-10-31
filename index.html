@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <title>CodePhantom Client</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container { max-width: 400px; margin: 0 auto; padding: 20px; width: 100%; }
+    .logo { text-align: center; padding: 40px 0; }
+    .logo h1 { font-size: 24px; color: #00ff88; }
+    .logo p { color: #888; font-size: 14px; margin-top: 8px; }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 18px; margin-bottom: 16px; color: #fff; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 14px; color: #aaa; margin-bottom: 6px; }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+    }
+    input:focus, select:focus { outline: none; border-color: #00ff88; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #00ff88;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; }
+    .hidden { display: none !important; }
+    .error { color: #ff4444; font-size: 14px; margin-top: 8px; }
+    .success { color: #00ff88; font-size: 14px; margin-top: 8px; }
+    .signal-item {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .signal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .signal-strategy { font-weight: 600; color: #00ff88; }
+    .signal-action { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .signal-action.buy { background: #00ff88; color: #000; }
+    .signal-action.sell { background: #ff4444; color: #fff; }
+    .signal-details { font-size: 14px; color: #aaa; }
+    .nav { display: flex; justify-content: space-around; padding: 12px; background: #1a1a1a; border-top: 1px solid #333; }
+    .nav-item { flex: 1; text-align: center; padding: 8px; color: #666; cursor: pointer; }
+    .nav-item.active { color: #00ff88; }
+    .nav-item:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+      <div class="logo">
+        <h1>CodePhantom</h1>
+        <p>Client Portal</p>
+      </div>
+      <div class="card">
+        <div class="tab-bar">
+          <div class="tab active" id="tab-login" onclick="switchTab('login')">Login</div>
+          <div class="tab" id="tab-register" onclick="switchTab('register')">Register</div>
+        </div>
+        
+        <div id="login-form">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="••••••••">
+          </div>
+          <button onclick="login()">Login</button>
+        </div>
+        
+        <div id="register-form" class="hidden">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="reg-username" placeholder="johndoe">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="reg-password" placeholder="••••••••">
+          </div>
+          <button onclick="register()">Register</button>
+        </div>
+        
+        <div id="auth-error" class="error hidden"></div>
+      </div>
+    </div>
+
+    <!-- Licence Activation Screen -->
+    <div id="licence-screen" class="hidden">
+      <div class="logo">
+        <h1>CodePhantom</h1>
+        <p>Activate Licence</p>
+      </div>
+      <div class="card">
+        <h2>Enter Licence Key</h2>
+        <div class="form-group">
+          <label>Licence Key</label>
+          <input type="text" id="licence-key" placeholder="CPA-XXXXX-XXXXX-XXXXX-XXXXX">
+        </div>
+        <div class="form-group">
+          <label>Device Name</label>
+          <input type="text" id="device-name" placeholder="My Phone">
+        </div>
+        <button id="activate-btn" onclick="activateLicence()">Activate</button>
+        <div id="licence-error" class="error hidden"></div>
+        <div id="licence-success" class="success hidden"></div>
+      </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-screen" class="hidden">
+      <div class="logo">
+        <h1>CodePhantom</h1>
+        <p id="user-email"></p>
+      </div>
+
+      <!-- Signals Tab -->
+      <div id="signals-tab">
+        <div class="card">
+          <h2>Signals</h2>
+          <div id="signals-list"></div>
+        </div>
+      </div>
+
+      <!-- EA Tab -->
+      <div id="ea-tab" class="hidden">
+        <div class="card">
+          <h2>EA Setup</h2>
+          <div class="form-group">
+            <label>Account Label</label>
+            <input type="text" id="ea-label" placeholder="FTMO 100k">
+          </div>
+          <div class="form-group">
+            <label>Broker</label>
+            <input type="text" id="ea-broker" placeholder="FTMO">
+          </div>
+          <div class="form-group">
+            <label>Account Number</label>
+            <input type="text" id="ea-account" placeholder="1234567">
+          </div>
+          <div class="form-group">
+            <label>Platform</label>
+            <select id="ea-platform">
+              <option value="MT5">MT5</option>
+              <option value="MT4">MT4</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Risk Mode</label>
+            <select id="ea-risk-mode">
+              <option value="CONSERVATIVE">Conservative</option>
+              <option value="MODERATE">Moderate</option>
+              <option value="AGGRESSIVE">Aggressive</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Risk Percentage</label>
+            <input type="number" id="ea-risk-pct" value="1.0" step="0.1" min="0.1" max="10">
+          </div>
+          <button id="ea-register-btn" onclick="registerEA()">Register EA</button>
+          <div id="ea-error" class="error hidden"></div>
+          <div id="ea-success" class="success hidden"></div>
+        </div>
+
+        <div class="card">
+          <h2>EA Status</h2>
+          <div id="ea-status-list"></div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="nav">
+        <div class="nav-item active" onclick="showTab('signals')">Signals</div>
+        <div class="nav-item" onclick="showTab('ea')">EA</div>
+        <div class="nav-item" onclick="logout()">Logout</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = '/api/v1';
+    let authToken = localStorage.getItem('auth_token');
+    let userId = localStorage.getItem('user_id');
+
+    function switchTab(tab) {
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+      document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+    }
+
+    async function login() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('auth-error');
+      
+      if (!email || !password) {
+        errorEl.textContent = 'Please fill in all fields';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: email, password })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          authToken = data.data.access_token;
+          userId = data.data.user.id;
+          localStorage.setItem('auth_token', authToken);
+          localStorage.setItem('user_id', userId);
+          showLicenceScreen();
+        } else {
+          errorEl.textContent = data.error?.message || 'Login failed';
+          errorEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorEl.textContent = 'Network error: ' + err.message;
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function register() {
+      const email = document.getElementById('reg-email').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const errorEl = document.getElementById('auth-error');
+      
+      if (!email || !username || !password) {
+        errorEl.textContent = 'Please fill in all fields';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, username, password })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          errorEl.classList.add('hidden');
+          alert('Registration successful! Please check your email to verify, then login.');
+          switchTab('login');
+        } else {
+          errorEl.textContent = data.error?.message || 'Registration failed';
+          errorEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorEl.textContent = 'Network error: ' + err.message;
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function activateLicence() {
+      const key = document.getElementById('licence-key').value.trim();
+      const deviceName = document.getElementById('device-name').value.trim();
+      const errorEl = document.getElementById('licence-error');
+      const successEl = document.getElementById('licence-success');
+      
+      if (!key || !deviceName) {
+        errorEl.textContent = 'Please fill in all fields';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/licences/activate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            licence_key: key,
+            device: {
+              device_identifier: getDeviceId(),
+              friendly_name: deviceName,
+              platform: 'web'
+            }
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          authToken = data.data.token || authToken;
+          userId = data.data.user_id;
+          localStorage.setItem('auth_token', authToken);
+          localStorage.setItem('user_id', userId);
+          successEl.textContent = 'Licence activated!';
+          successEl.classList.remove('hidden');
+          errorEl.classList.add('hidden');
+          setTimeout(showApp, 1000);
+        } else {
+          errorEl.textContent = data.error?.message || 'Activation failed';
+          errorEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorEl.textContent = 'Network error: ' + err.message;
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function registerEA() {
+      const label = document.getElementById('ea-label').value.trim();
+      const broker = document.getElementById('ea-broker').value.trim();
+      const account = document.getElementById('ea-account').value.trim();
+      const platform = document.getElementById('ea-platform').value;
+      const riskMode = document.getElementById('ea-risk-mode').value;
+      const riskPct = parseFloat(document.getElementById('ea-risk-pct').value);
+      
+      if (!label || !broker || !account) {
+        showError('ea-error', 'Please fill in all fields');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/me/ea-instances`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            account_label: label,
+            broker,
+            account_number: account,
+            platform,
+            risk_mode: riskMode,
+            risk_percentage: riskPct
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          showSuccess('ea-success', 'EA registered successfully');
+          loadEAStatus();
+        } else {
+          showError('ea-error', data.error?.message || 'Registration failed');
+        }
+      } catch (err) {
+        showError('ea-error', 'Network error: ' + err.message);
+      }
+    }
+
+    async function loadSignals() {
+      try {
+        const response = await fetch(`${API_URL}/me/signals?limit=20`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.status === 401) {
+          logout();
+          return;
+        }
+
+        const data = await response.json();
+        const container = document.getElementById('signals-list');
+        
+        if (data.data && data.data.length > 0) {
+          container.innerHTML = data.data.map(signal => `
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="signal-strategy">${signal.strategy || 'Signal'}</span>
+                <span class="signal-action ${signal.action?.toLowerCase() || 'buy'}">${signal.action || 'BUY'}</span>
+              </div>
+              <div class="signal-details">
+                ${signal.symbol || ''} | Lot: ${signal.lot_size || 0.1} | SL: ${signal.sl_pips || 10} | TP: ${signal.tp_pips || 25}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<p style="color: #666; text-align: center;">No signals yet</p>';
+        }
+      } catch (err) {
+        console.error('Failed to load signals:', err);
+      }
+    }
+
+    async function loadEAStatus() {
+      try {
+        const response = await fetch(`${API_URL}/me/ea-instances`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.status === 401) {
+          logout();
+          return;
+        }
+
+        const data = await response.json();
+        const container = document.getElementById('ea-status-list');
+        
+        if (data.data && data.data.length > 0) {
+          container.innerHTML = data.data.map(ea => `
+            <div class="signal-item">
+              <div class="signal-header">
+                <span class="signal-strategy">${ea.account_label || 'EA Account'}</span>
+                <span class="signal-action buy">${ea.status || 'Active'}</span>
+              </div>
+              <div class="signal-details">
+                ${ea.broker || ''} | ${ea.platform || ''} | Risk: ${ea.risk_mode || 'MODERATE'}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<p style="color: #666; text-align: center;">No EA instances registered</p>';
+        }
+      } catch (err) {
+        console.error('Failed to load EA status:', err);
+      }
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      if (tab === 'signals') {
+        document.getElementById('signals-tab').classList.remove('hidden');
+        document.getElementById('ea-tab').classList.add('hidden');
+        loadSignals();
+      } else {
+        document.getElementById('signals-tab').classList.add('hidden');
+        document.getElementById('ea-tab').classList.remove('hidden');
+        loadEAStatus();
+      }
+    }
+
+    function showApp() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('licence-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      loadSignals();
+    }
+
+    function showLicenceScreen() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('licence-screen').classList.remove('hidden');
+    }
+
+    // Check auth state on load
+    if (authToken) {
+      showApp();
+    }
+
+    function logout() {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_id');
+      authToken = null;
+      userId = null;
+      location.reload();
+    }
+
+    function showError(id, message) {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    function showSuccess(id, message) {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+
+    function getDeviceId() {
+      let id = localStorage.getItem('device_id');
+      if (!id) {
+        id = 'web_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('device_id', id);
+      }
+      return id;
+    }
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>

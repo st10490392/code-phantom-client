@@ -28,16 +28,30 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # NOTE: setup-android@v3 defaults to `packages: tools platform-tools`.
+      # The legacy `tools` package was retired from Google's repository and the
+      # sdkmanager call exits 1 -> job fails. Override packages explicitly.
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          cmdline-tools-version: 12266719
+          accept-android-sdk-licenses: true
 
-      # Accept SDK licences, then install only what Capacitor needs.
-      # NOTE: setup-android@v3 `build-tools:` arg pulls the deprecated `tools`
-      # package and fails the job — install the components explicitly instead.
-      - name: Install Android SDK components
+      # Capacitor's android/variables.gradle uses compileSdk/targetSdk 36.
+      - name: Install Android platform + build tools
         run: |
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/**') }}
+          restore-keys: gradle-${{ runner.os }}-
 
       - name: Build web assets
         run: |

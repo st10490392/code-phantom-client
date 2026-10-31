@@ -3,75 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#05070D">
   <title>CodePhantom Client</title>
   <link rel="manifest" href="manifest.json">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0a0a0a;
-      color: #ffffff;
+      background: #05070D;
+      color: #F5F7FA;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
     .container { max-width: 400px; margin: 0 auto; padding: 20px; width: 100%; }
     .logo { text-align: center; padding: 40px 0; }
-    .logo h1 { font-size: 24px; color: #00ff88; }
-    .logo p { color: #888; font-size: 14px; margin-top: 8px; }
+    .logo h1 { font-size: 24px; color: #F5F7FA; }
+    .logo p { color: #8792A5; font-size: 14px; margin-top: 8px; }
     .card {
-      background: #1a1a1a;
-      border: 1px solid #333;
+      background: #09111F;
+      border: 1px solid rgba(201,205,213,0.10);
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 16px;
     }
-    .card h2 { font-size: 18px; margin-bottom: 16px; color: #fff; }
+    .card h2 { font-size: 18px; margin-bottom: 16px; color: #F5F7FA; }
     .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 14px; color: #aaa; margin-bottom: 6px; }
+    label { display: block; font-size: 14px; color: #8792A5; margin-bottom: 6px; }
     input, select {
       width: 100%;
       padding: 12px;
-      background: #0a0a0a;
-      border: 1px solid #333;
+      background: #0D1627;
+      border: 1px solid rgba(201,205,213,0.10);
       border-radius: 8px;
-      color: #fff;
+      color: #F5F7FA;
       font-size: 16px;
     }
-    input:focus, select:focus { outline: none; border-color: #00ff88; }
+    input:focus, select:focus { outline: none; border-color: #168BFF; }
     button {
       width: 100%;
       padding: 14px;
-      background: #00ff88;
-      color: #000;
+      background: linear-gradient(135deg, #7C3AED 0%, #168BFF 60%, #00BFFF 100%);
+      color: #FFFFFF;
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
     }
-    button:disabled { background: #333; color: #666; cursor: not-allowed; }
+    button:disabled { background: #121D33; color: #6B7280; cursor: not-allowed; }
     .hidden { display: none !important; }
-    .error { color: #ff4444; font-size: 14px; margin-top: 8px; }
-    .success { color: #00ff88; font-size: 14px; margin-top: 8px; }
+    .error { color: #EF4444; font-size: 14px; margin-top: 8px; }
+    .success { color: #22C55E; font-size: 14px; margin-top: 8px; }
     .signal-item {
-      background: #1a1a1a;
-      border: 1px solid #333;
+      background: #09111F;
+      border: 1px solid rgba(201,205,213,0.10);
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 12px;
     }
     .signal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .signal-strategy { font-weight: 600; color: #00ff88; }
+    .signal-strategy { font-weight: 600; color: #7C3AED; }
     .signal-action { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-    .signal-action.buy { background: #00ff88; color: #000; }
-    .signal-action.sell { background: #ff4444; color: #fff; }
-    .signal-details { font-size: 14px; color: #aaa; }
-    .nav { display: flex; justify-content: space-around; padding: 12px; background: #1a1a1a; border-top: 1px solid #333; }
-    .nav-item { flex: 1; text-align: center; padding: 8px; color: #666; cursor: pointer; }
-    .nav-item.active { color: #00ff88; }
-    .nav-item:hover { color: #fff; }
+    .signal-action.buy { background: #22C55E; color: #FFFFFF; }
+    .signal-action.sell { background: #EF4444; color: #FFFFFF; }
+    .signal-details { font-size: 14px; color: #8792A5; }
+    .nav { display: flex; justify-content: space-around; padding: 12px; background: #09111F; border-top: 1px solid rgba(201,205,213,0.10); }
+    .nav-item { flex: 1; text-align: center; padding: 8px; color: #6B7280; cursor: pointer; }
+    .nav-item.active { color: #7C3AED; }
+    .nav-item:hover { color: #F5F7FA; }
+    .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 14px; cursor: pointer; color: #8792A5; background: #0D1627; border: 1px solid rgba(201,205,213,0.10); }
+    .tab.active { color: #F5F7FA; background: #7C3AED; border-color: #7C3AED; }
   </style>
 </head>
 <body>
@@ -412,7 +415,7 @@
             </div>
           `).join('');
         } else {
-          container.innerHTML = '<p style="color: #666; text-align: center;">No signals yet</p>';
+          container.innerHTML = '<p style="color: #8792A5; text-align: center;">No signals yet</p>';
         }
       } catch (err) {
         console.error('Failed to load signals:', err);
@@ -446,7 +449,7 @@
             </div>
           `).join('');
         } else {
-          container.innerHTML = '<p style="color: #666; text-align: center;">No EA instances registered</p>';
+          container.innerHTML = '<p style="color: #8792A5; text-align: center;">No EA instances registered</p>';
         }
       } catch (err) {
         console.error('Failed to load EA status:', err);

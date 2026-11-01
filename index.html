@@ -235,10 +235,52 @@
         </div>
       </div>
 
+      <!-- Generate Licence Tab -->
+      <div id="generate-tab" class="hidden">
+        <div class="card">
+          <h2>Generate Licence Key</h2>
+          <div class="form-group">
+            <label>User ID</label>
+            <input type="text" id="gen-user-id" placeholder="UUID of the user">
+          </div>
+          <div class="form-group">
+            <label>Product</label>
+            <select id="gen-product">
+              <option value="SCANNER">Scanner</option>
+              <option value="SIGNALS">Signals</option>
+              <option value="EA">EA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Duration</label>
+            <select id="gen-duration">
+              <option value="7">7 days</option>
+              <option value="30" selected>30 days</option>
+              <option value="60">60 days</option>
+              <option value="90">90 days</option>
+              <option value="365">1 year</option>
+              <option value="0">Lifetime</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Max Devices</label>
+            <input type="number" id="gen-devices" value="1" min="1" max="10">
+          </div>
+          <button id="gen-btn" onclick="generateLicence()">Generate Key</button>
+          <div id="gen-error" class="error hidden"></div>
+          <div id="gen-success" class="success hidden"></div>
+          <div id="gen-result" class="hidden" style="margin-top: 16px;">
+            <label>Generated Key (copy this now - it won't be shown again):</label>
+            <input type="text" id="gen-key-output" readonly style="font-size: 18px; letter-spacing: 2px; text-align: center; margin-top: 8px;">
+          </div>
+        </div>
+      </div>
+
       <!-- Navigation -->
       <div class="nav">
         <div class="nav-item active" onclick="showTab('signals')">Signals</div>
         <div class="nav-item" onclick="showTab('ea')">EA</div>
+        <div class="nav-item" onclick="showTab('generate')">Generate</div>
         <div class="nav-item" onclick="logout()">Logout</div>
       </div>
     </div>
@@ -485,18 +527,72 @@
       }
     }
 
+    async function generateLicence() {
+      const userId = document.getElementById('gen-user-id').value.trim();
+      const product = document.getElementById('gen-product').value;
+      const durationDays = parseInt(document.getElementById('gen-duration').value);
+      const maxDevices = parseInt(document.getElementById('gen-devices').value);
+      const errorEl = document.getElementById('gen-error');
+      const successEl = document.getElementById('gen-success');
+      const resultEl = document.getElementById('gen-result');
+
+      errorEl.classList.add('hidden');
+      successEl.classList.add('hidden');
+      resultEl.classList.add('hidden');
+
+      if (!userId) {
+        showError('gen-error', 'User ID is required');
+        return;
+      }
+
+      try {
+        const body = { user_id: userId, product, max_devices: maxDevices };
+        if (durationDays > 0) {
+          const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+          body.expires_at = expiresAt;
+        }
+
+        const response = await fetch(`${API_URL}/admin/platform/licences/keys`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          successEl.textContent = 'Key generated!';
+          successEl.classList.remove('hidden');
+          const key = data.data?.plaintext_key || data.plaintext_key || 'KEY_GENERATED';
+          document.getElementById('gen-key-output').value = key;
+          resultEl.classList.remove('hidden');
+        } else {
+          showError('gen-error', data.error?.message || 'Generation failed');
+        }
+      } catch (err) {
+        showError('gen-error', 'Network error: ' + err.message);
+      }
+    }
+
     function showTab(tab) {
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       event.target.classList.add('active');
       
+      document.getElementById('signals-tab').classList.add('hidden');
+      document.getElementById('ea-tab').classList.add('hidden');
+      document.getElementById('generate-tab').classList.add('hidden');
+
       if (tab === 'signals') {
         document.getElementById('signals-tab').classList.remove('hidden');
-        document.getElementById('ea-tab').classList.add('hidden');
         loadSignals();
-      } else {
-        document.getElementById('signals-tab').classList.add('hidden');
+      } else if (tab === 'ea') {
         document.getElementById('ea-tab').classList.remove('hidden');
         loadEAStatus();
+      } else if (tab === 'generate') {
+        document.getElementById('generate-tab').classList.remove('hidden');
       }
     }
 
